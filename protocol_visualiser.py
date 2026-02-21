@@ -1,8 +1,8 @@
 import turtle
 t = turtle.Turtle()
-turtle.tracer(0)
+# turtle.tracer(0)
 x = -200
-y = 200
+y = -200
 w = 50
 h = w
 r = h/2
@@ -62,7 +62,7 @@ def draw(t=None, element="agent", ornament="", text="", x=0, y=0, w=100, h=100):
         t=turtle.Turtle()
     
     if element == "connection":
-        t.forward(w)
+        t.forward(2*w)
         if ornament == "arrow":
             t.stamp()
     elif element == "agent":
@@ -97,7 +97,8 @@ def process(protocol:str, x=0, y=0, w=50, h=50):
     ans = []
     lines = protocol.split("\n")
     for j, line in enumerate(lines):
-        els = line.split(" ")
+        stage, text = line.strip().split(":")
+        els = stage.strip().split(" ")
         for i, el in enumerate(els):
             eltype = el[0]
             if len(el) > 1:
@@ -105,10 +106,10 @@ def process(protocol:str, x=0, y=0, w=50, h=50):
             else:
                 elorn = ""
             match eltype:
-                case eltype if eltype in "ABCDE" and elorn == "k":
+                case eltype if eltype in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" and elorn == "k":
                     print("agent", eltype, "X =", x)
                     draw(t, element='agent', ornament="key", text=eltype, x=x+w/2, y=y, w=w, h=h)
-                case eltype if eltype in "ABCDE":
+                case eltype if eltype in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
                     print("agent", eltype, "X =", x)
                     draw(t, element='agent', text=eltype, x=x+w/2, y=y, w=w, h=h)
                 case "-" if elorn == ">":
@@ -125,18 +126,20 @@ def process(protocol:str, x=0, y=0, w=50, h=50):
                     draw(t, element='message', text="a", x=x+w/2, y=y, w=w, h=h)
                 case _:
                     print("?")
-            x = base_x + w * (i+1)
-            print("new X =", x)
-            
+            x = t.pos()[0]
+        t.teleport((x-base_x)/2, y+10)
+        t.write(text, align="center")
         x = base_x
         y = base_y - (h+10) * (j+1)
         ans.append(els)
     return {"ans":ans, "x":x, "y":y}
         
 if testing:
-    assert (ans := process("A -> B"))["ans"] == [["A", "->", "B"]], ans
-    assert (ans := process("Ak - #n -> B", y=-100))["ans"] == [["Ak", "-", "#n", "->", "B"]]
-    assert (ans := process("A -> B\nAk - #n -> B", y=-200))["ans"] == [["A", "->", "B"], ["Ak", "-", "#n", "->", "B"]]
+    # assert (ans := process("A -> B"))["ans"] == [["A", "->", "B"]], ans
+    # assert (ans := process("Ak - #n -> B", y=-100))["ans"] == [["Ak", "-", "#n", "->", "B"]]
+    # assert (ans := process("A -> B\nAk - #n -> B", y=-200))["ans"] == [["A", "->", "B"], ["Ak", "-", "#n", "->", "B"]]
+    assert (ans := process("A -> S:A, {Ta, B, Kab}Kas\nS -> B  :   {Ts, A, Kab}Kbs", y=-200))["ans"] == [["A", "->", "S"], ["S", "->", "B"]]
+
 
 t.hideturtle()
 turtle.update()
