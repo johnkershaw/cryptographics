@@ -2,12 +2,12 @@ import turtle
 t = turtle.Turtle()
 # turtle.tracer(0)
 x = -200
-y = -200
-w = 50
+y = 200
+w = 100
 h = w
 r = h/2
 
-testing = True
+testing = False
 
 #TODO head and shoulders
 
@@ -91,14 +91,28 @@ def draw(t=None, element="agent", ornament="", text="", x=0, y=0, w=100, h=100):
     elif ornament == "key":
         draw_key(t, x, y, w, h)
 
-def process(protocol:str, x=0, y=0, w=50, h=50):
+class ProtocolError(Exception):
+    def __init__(self, line, msg="Protocol must be in common syntax"):
+        self.line = line
+        self.msg = msg
+        super().__init__(self.msg)
+
+    def __str__(self):
+        return f'{self.line} -> {self.msg}'
+
+def process(protocol, x=0, y=0, w=50, h=50):
     base_x = x
     base_y = y
     ans = []
-    lines = protocol.split("\n")
+    if type(protocol) == "String":
+        lines = protocol.split("\n")
+    else:
+        lines = protocol
     for j, line in enumerate(lines):
-        stage, text = line.strip().split(":")
-        els = stage.strip().split(" ")
+        line_parts = line.split(":")
+        stage = line_parts[0].strip()
+        text = line_parts[1].strip()
+        els = stage.split(" ")
         for i, el in enumerate(els):
             eltype = el[0]
             if len(el) > 1:
@@ -125,12 +139,13 @@ def process(protocol:str, x=0, y=0, w=50, h=50):
                     print("message", "X =", x)
                     draw(t, element='message', text="a", x=x+w/2, y=y, w=w, h=h)
                 case _:
-                    print("?")
+                    raise ProtocolError(line)
             x = t.pos()[0]
-        t.teleport((x-base_x)/2, y+10)
-        t.write(text, align="center")
+        t.teleport((base_x+x)/2, y+10)
+        text_size = 3*(w-10)//(len(text))
+        t.write(text, align="center", font=("Consolas", text_size, "normal"))
         x = base_x
-        y = base_y - (h+10) * (j+1)
+        y = base_y - (h*1.2) * (j+1)
         ans.append(els)
     return {"ans":ans, "x":x, "y":y}
         
@@ -138,8 +153,24 @@ if testing:
     # assert (ans := process("A -> B"))["ans"] == [["A", "->", "B"]], ans
     # assert (ans := process("Ak - #n -> B", y=-100))["ans"] == [["Ak", "-", "#n", "->", "B"]]
     # assert (ans := process("A -> B\nAk - #n -> B", y=-200))["ans"] == [["A", "->", "B"], ["Ak", "-", "#n", "->", "B"]]
-    assert (ans := process("A -> S:A, {Ta, B, Kab}Kas\nS -> B  :   {Ts, A, Kab}Kbs", y=-200))["ans"] == [["A", "->", "S"], ["S", "->", "B"]]
-
+    assert (ans := process("A -> S  :   A, {Ta, B, Kab}Kas\nS -> B  :   {Ts, A, Kab}Kbs", x=x, y=y, w=w, h=h))["ans"] == [["A", "->", "S"], ["S", "->", "B"]]
+else:
+    lines = []
+    done = False
+    while not done:
+        line = input("Please enter the next line of the protocol, or enter a blank line to start drawing: ")
+        if line:
+            lines.append(line)
+        else:
+            done = True
+    if lines:
+        print(lines)
+        process(lines, x=x, y=y, w=w, h=h)
+        print(Protocol finished!)
+    else:
+        print("Empty protocol")
+            
+    
 
 t.hideturtle()
 turtle.update()
