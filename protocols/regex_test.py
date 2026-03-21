@@ -36,7 +36,13 @@ template = r'{"stage": \1, "from": "\2", "to": "\3", "payload": "\5", "encryptio
 matches = re.findall(pattern, text)
 stages = []
 for m in matches:
-    stages.append({'stage': m[0]})
+    stages.append({
+        'stage': m[0],
+        'from': m[1],
+        'to': m[2],
+        'payload': m[4],
+        'encryption': m[3] + m[5],
+        })
     print(m)
 
 print(stages)
