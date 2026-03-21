@@ -1,0 +1,15 @@
+// https://lsv.ens-paris-saclay.fr/Software/spore/format.html
+
+messages	  :=   	(message (action)? )+
+message	:=	label'.' id '->' id':' tuple
+label	:=	id
+id	:=	non empty sequence of alphanumeric characters, or '-', '_'
+tuple	:=	atom (',' atom)*
+atom	:=	cipher
+ 	 	| clearterm
+clearterm	:=	id
+ 	 	| apply
+ 	 	| '(' (tuple)? ')'
+cipher	:=	{ tuple }clearterm
+apply	:=	id'('tuple')'
+action	:=	arbitrary text
