@@ -161,6 +161,49 @@ class ProtocolError(Exception):
     def __str__(self):
         return f'{self.line} -> {self.msg}'
 
+def draw_elements(t, els, x, y, w, h):
+    for i, el in enumerate(els):
+        print("Element", i + 1, el)
+        eltype = el[0]
+        if len(el) > 1:
+            elorn = el[1:]
+        else:
+            elorn = ""
+        match eltype:
+            case "S" if elorn == "k":
+                print("server", eltype, "X =", x)
+                draw(t, element='server', ornament="key", text=eltype, x=x+w/2, y=y, w=w, h=h)
+            case "S":
+                print("server", eltype, "X =", x)
+                draw(t, element='server', text=eltype, x=x+w/2, y=y, w=w, h=h)
+            case "I" if elorn == "k":
+                print("interceptor", eltype, "X =", x)
+                draw(t, element='interceptor', ornament="key", text=eltype, x=x+w/2, y=y, w=w, h=h)
+            case "I":
+                print("server", eltype, "X =", x)
+                draw(t, element='interceptor', text=eltype, x=x+w/2, y=y, w=w, h=h)
+            case eltype if eltype in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" and elorn == "k":
+                print("agent", eltype, "X =", x)
+                draw(t, element='agent', ornament="key", text=eltype, x=x+w/2, y=y, w=w, h=h)
+            case eltype if eltype in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+                print("agent", eltype, "X =", x)
+                draw(t, element='agent', text=eltype, x=x+w/2, y=y, w=w, h=h)
+            case "-" if elorn == ">":
+                print("arrow", "X =", x)
+                draw(t, element='connection', ornament="arrow", w=w)
+            case "-":
+                print("line", "X =", x)
+                draw(t, element='connection', w=w)
+            case "#":
+                print("nonce", "X =", x)
+                draw(t, element='message', ornament="clock", text=elorn, x=x+w/2, y=y, w=w, h=h)
+            case "m":
+                print("message", "X =", x)
+                draw(t, element='message', text=elorn, x=x+w/2, y=y, w=w, h=h)
+            case _:
+                raise ProtocolError(line)
+        x = t.pos()[0].__round__()
+
 def process(protocol, x=0, y=0, w=50, h=50):
     base_x = x
     base_y = y
@@ -180,47 +223,7 @@ def process(protocol, x=0, y=0, w=50, h=50):
             has_text = True
         els = stage.split(" ")
         print("There are ", len(els), "elements")
-        for i, el in enumerate(els):
-            print("Element", i + 1, el)
-            eltype = el[0]
-            if len(el) > 1:
-                elorn = el[1:]
-            else:
-                elorn = ""
-            match eltype:
-                case "S" if elorn == "k":
-                    print("server", eltype, "X =", x)
-                    draw(t, element='server', ornament="key", text=eltype, x=x+w/2, y=y, w=w, h=h)
-                case "S":
-                    print("server", eltype, "X =", x)
-                    draw(t, element='server', text=eltype, x=x+w/2, y=y, w=w, h=h)
-                case "I" if elorn == "k":
-                    print("interceptor", eltype, "X =", x)
-                    draw(t, element='interceptor', ornament="key", text=eltype, x=x+w/2, y=y, w=w, h=h)
-                case "I":
-                    print("server", eltype, "X =", x)
-                    draw(t, element='interceptor', text=eltype, x=x+w/2, y=y, w=w, h=h)
-                case eltype if eltype in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" and elorn == "k":
-                    print("agent", eltype, "X =", x)
-                    draw(t, element='agent', ornament="key", text=eltype, x=x+w/2, y=y, w=w, h=h)
-                case eltype if eltype in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
-                    print("agent", eltype, "X =", x)
-                    draw(t, element='agent', text=eltype, x=x+w/2, y=y, w=w, h=h)
-                case "-" if elorn == ">":
-                    print("arrow", "X =", x)
-                    draw(t, element='connection', ornament="arrow", w=w)
-                case "-":
-                    print("line", "X =", x)
-                    draw(t, element='connection', w=w)
-                case "#":
-                    print("nonce", "X =", x)
-                    draw(t, element='message', ornament="clock", text=elorn, x=x+w/2, y=y, w=w, h=h)
-                case "m":
-                    print("message", "X =", x)
-                    draw(t, element='message', text=elorn, x=x+w/2, y=y, w=w, h=h)
-                case _:
-                    raise ProtocolError(line)
-            x = t.pos()[0].__round__()
+        draw_elements(t, els, x, y, w, h)
         if has_text:
             t.teleport((base_x+x)/2, y+10)
             text_size = 3*(w-10)//(len(text))
