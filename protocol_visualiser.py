@@ -5,7 +5,7 @@ t = turtle.Turtle()
 turtle.tracer(0)
 x = -300
 y = 200
-w = 75
+w = 40
 h = w
 r = h/2
 
@@ -64,7 +64,7 @@ def draw(t=None, element="agent", ornament="", text="", x=0, y=0, w=100, h=100):
         t=turtle.Turtle()
     
     if element == "connection":
-        t.forward(w)
+        t.fd(w)
         if ornament == "arrow":
             t.stamp()
     elif element == "agent":
@@ -85,12 +85,12 @@ def draw(t=None, element="agent", ornament="", text="", x=0, y=0, w=100, h=100):
         t.seth(270 - a)
         t.circle(-r, e)
         t.seth(270)
-        t.forward(3*h/4)
+        t.fd(3*h/4)
         t.seth(270 + a)
         t.circle(r, e)
         t.seth(90)
-        t.forward(3*h/4)
-        t.right(90)
+        t.fd(3*h/4)
+        t.rt(90)
         t.teleport(x, y-8)
         t.write(text, align="center", font = ("Arial", 8, "bold"))
         t.teleport(x+w/2, y)
@@ -102,29 +102,52 @@ def draw(t=None, element="agent", ornament="", text="", x=0, y=0, w=100, h=100):
 
         t.teleport(x-w/2, y-h/2)
         t.seth(a)
-        t.forward(long_side)
+        t.fd(long_side)
         t.seth(360-a)
-        t.forward(long_side)
+        t.fd(long_side)
         t.seth(180-b)
-        t.forward(short_side)
+        t.fd(short_side)
         t.seth(180+b)
-        t.forward(short_side)
+        t.fd(short_side)
         t.seth(0)
         t.teleport(x, y-8)
         t.write(text, align="center", font = ("Arial", 8, "bold"))
         t.teleport(x+w/2, y)
     elif element == "message":
         t.teleport(x-w/2, y+h/2)
-        t.forward(w)
-        t.right(90)
-        t.forward(h)
-        t.right(90)
-        t.forward(w)
-        t.right(90)
-        t.forward(h)
-        t.right(90)
+        t.fd(w)
+        t.rt(90)
+        t.fd(h)
+        t.rt(90)
+        t.fd(w)
+        t.rt(90)
+        t.fd(h)
+        t.rt(90)
         t.teleport(x, y-8)
         t.write(text, align="center", font = ("Arial", 8, "bold"))
+        t.teleport(x+w/2, y)
+    elif element == "lock":
+        t.teleport(x-w/2, y+h/2)
+        t.fd(w)
+        t.rt(90)
+        t.fd(h)
+        t.rt(90)
+        t.fd(w)
+        t.rt(90)
+        t.fd(h)
+        t.rt(90)
+        t.teleport(x - w/6, y+h/2)
+        t.seth(90)
+        t.fd(h/4)
+        t.circle(-w/6, 180)
+        t.fd(h/4)
+        t.teleport(x - w/3, y+h/2)
+        t.seth(90)
+        t.fd(h/4)
+        t.circle(-w/3, 180)
+        t.fd(h/4)
+        t.teleport(x, y-10)
+        t.write(text, align="center", font = ("Arial", 10, "bold"))
         t.teleport(x+w/2, y)
 
     if ornament == "clock":
@@ -132,20 +155,20 @@ def draw(t=None, element="agent", ornament="", text="", x=0, y=0, w=100, h=100):
     elif ornament == "key":
         draw_key(t, x, y, w, h)
 
-def draw_encrypted(t=None, elements=[], key="X", x=0, y=0, w=100, h=100):
-    total_w = w * (len(elements)*1.25 + 0.25)
+def draw_encrypted(t=None, els=[], key="X", x=0, y=0, w=100, h=100):
+    total_w = w * (len(els)*1.25 + 0.25)
     t.teleport(x, y+h)
-    t.forward(total_w)
-    t.right(90)
-    t.forward(2*h)
-    t.right(90)
-    t.forward(total_w)
-    t.right(90)
-    t.forward(2*h)
-    t.right(90)
+    t.fd(total_w)
+    t.rt(90)
+    t.fd(2*h)
+    t.rt(90)
+    t.fd(total_w)
+    t.rt(90)
+    t.fd(2*h)
+    t.rt(90)
     t.teleport(x+w*0.25, y)
     current_x = x + w*0.25
-    for el in elements:
+    for el in els:
         draw(t, el[0], el[1], el[2], current_x, y, w, h)
         current_x = current_x + w*1.25
     t.teleport(x+total_w/2, y-h)
@@ -241,6 +264,7 @@ if __name__ == '__main__':
         assert (ans := process("Ak - #a -> Bk\nBk - #a - #b -> Ak\nAk - #b -> Bk", x=x, y=y, w=w, h=h))["ans"] == [["Ak", "-", "#a", "->", "Bk"], ["Bk", "-", "#a", "-", "#b", "->", "Ak"], ["Ak", "-", "#b", "->", "Bk"]]
         # assert (ans := process("A -> S  :   A, {Ta, B, Kab}Kas\nS -> B  :   {Ts, A, Kab}Kbs", x=x, y=y, w=w, h=h))["ans"] == [["A", "->", "S"], ["S", "->", "B"]]
         # assert (ans := process("I -> B", x=x, y=y-300, w=w, h=h))["ans"] == [["I", "->", "B"]], ans
+        draw(t, element='lock', ornament="", text="Lock", x=200, y=200, w=w, h=h)
     else:
         lines = []
         done = False
