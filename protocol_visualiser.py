@@ -15,6 +15,12 @@ import math
 from PIL import Image
 from PIL import ImageGrab
 
+import os
+FOLDERPATH = "C:/xampp/htdocs/cryptographics/"
+FOLDERPATH = "C:Users/john/git_repos/cryptographics/"
+FOLDERPATH = os.path.dirname(os.path.realpath(__file__))
+OUTPUT_FILENAME = "output"
+
 t = turtle.Turtle()
 t.hideturtle()
 turtle.tracer(5)
@@ -359,13 +365,14 @@ if __name__ == '__main__':
         '''
 
         draw_stages(process(text), x, y, w, h)
+
+        PS_FILEPATH = FOLDERPATH + OUTPUT_FILENAME + ".ps"
+        t.screen.save(PS_FILEPATH, overwrite=True)
         
-        filepath = "C:/xampp/htdocs/cryptographics/output.ps"
-        t.screen.save(filepath, overwrite=True)
-        
-        # fails with ghostscript not found on paths message???
-        image = Image.open(filepath)
-        image.save("drawing.png")
+        # convert .ps to .png
+        PNG_FILENAME = "drawing.png"
+        image = Image.open(PS_FILEPATH)
+        # image.save(PNG_FILENAME)
 
         # screenshot - this works but ugly resolution
         x0, y0 = -300, -300
