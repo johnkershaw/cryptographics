@@ -21,10 +21,12 @@ FOLDERPATH = "C:Users/john/git_repos/cryptographics/"
 FOLDERPATH = os.path.dirname(os.path.realpath(__file__))
 OUTPUT_FILENAME = "output"
 
+scr = turtle.Screen()
+scr.setup(0.3, 0.85, 0, 0)
 t = turtle.Turtle()
 t.hideturtle()
 turtle.tracer(5)
-turtle.setup(0.3, 0.85, 0, 0)
+# turtle.setup(0.3, 0.85, 0, 0)
 x = -200
 y = 300
 w = 50
@@ -140,12 +142,19 @@ def draw_server(t=turtle.Turtle(), text="", x=0, y=0, w=100, h=100):
 
 def draw_agent(t=turtle.Turtle(), text="", x=0, y=0, w=100):
     r=w/2
-    t.teleport(x, y-r)
-    t.circle(r)
-    t.teleport(x, y-8)
+    # head
+    t.teleport(x, y)
+    t.circle(r/2)
+    t.teleport(x, y+r/4)
     t.write(text, align="center", font = ("Arial", 8, "bold"))
-    t.teleport(x+r, y)
 
+    # shoulders
+    t.teleport(x+r/1.4, y-r/1.4)
+    t.left(90)
+    t.circle(r/1.4, 180)
+    t.teleport(x+r, y)
+    t.seth(0)
+    
 def draw_connector(t=turtle.Turtle(), ornament="", w=100):
     t.fd(w)
     if ornament == "arrow":
@@ -274,13 +283,14 @@ def decrypt(payload):
         print("both kinds")
         match = re.findall(pattern, payload[:breakpoint])[0]
         els = payload[breakpoint:].split(", ")
-        pair = tuple(decrypt(match[1]), match[2])
-        els.append(pair)
+        # pair = tuple(decrypt(match[1]), match[2])
+        els.append(decrypt(match[1]))
+        els.append(match[2])
     return els
 
 def process(protocol, x=0, y=0, w=50, h=50):
     print(protocol)
-    pattern = r" (\d+)\. +(\w) -> (\w) +: +(.+)"
+    pattern = r" *(\d+)\. +(\w) -> (\w) +: +(.+)"
 
     matches = re.findall(pattern, protocol)
     stages = []
@@ -335,52 +345,64 @@ if __name__ == '__main__':
  5.   C -> S  :   {U, C, S, Kcs, T2start, T2expire}Kgs, {C, T2}Kcs
  6.   S -> C  :   {T2}Kcs'''
 
-        text = ''' 
-        // Lowe's fixed version of Needham-Schroder Public Key 
-        
-        A,B,S :                     Principal     
-        Na,Nb :                     Nonce         
-        KPa,KPb,KPs,KSa,KSb,KSs :   Key           
-        KPa,KSa :                   is a key pair 
-        KPb,KSb :                   is a key pair 
-        KPs,KSs :                   is a key pair 
-        
-        
-        1.   A -> S  :   A,B            
-        2.   S -> A  :   {KPb, B}KSs    
-        3.   A -> B  :   {Na, A}KPb     
-        4.   B -> S  :   B,A            
-        5.   S -> B  :   {KPa, A}KSs    
-        6.   B -> A  :   {Na, Nb, B}KPa 
-        7.   A -> B  :   {Nb}KPb        
-        
-        // Security Protocols Open Repository 
-        // http://www.lsv.ens-cachan.fr/spore 
-        
-        -----------------------------------------------------------------------
-        
-        
-                    This document was translated from LaTeX by HeVeA
-                    (http://pauillac.inria.fr/~maranget/hevea/index.html). 
-        '''
+        texts = {
+'nspkLowe': ''' 
+1.   A -> S  :   A,B            
+2.   S -> A  :   {KPb, B}KSs    
+3.   A -> B  :   {Na, A}KPb     
+4.   B -> S  :   B,A            
+5.   S -> B  :   {KPa, A}KSs    
+6.   B -> A  :   {Na, Nb, B}KPa 
+7.   A -> B  :   {Nb}KPb        
+''',
 
-        draw_stages(process(text), x, y, w, h)
+'Andrew Secure RPC': '''
+1.  	A	->	B	:  	A, {Na}Kab
+2.  	B	->	A	:  	{succNa, Nb}Kab
+3.  	A	->	B	:  	{succNb}Kab
+4.  	B	->	A	:  	{K'ab, N'b}Kab
 
-        PS_FILEPATH = FOLDERPATH + OUTPUT_FILENAME + ".ps"
-        t.screen.save(PS_FILEPATH, overwrite=True)
-        
-        # convert .ps to .png
-        PNG_FILENAME = "drawing.png"
-        image = Image.open(PS_FILEPATH)
-        # image.save(PNG_FILENAME)
+''',
 
-        # screenshot - this works but ugly resolution
-        x0, y0 = -300, -300
-        x1, y1 = 300, 300
-        ImageGrab.grab().crop((x0, y0, x1, y1)).save("screenshot.png")
 
-        draw_stages(process(kerberos), x, y, w, h)
-        
+'Denning-Sacco_Shared Key': '''
+1.  	A	->	S	:  	A, B
+2.  	S	->	A	:  	{B, Kab, T, {Kab, A, T}Kbs}Kas
+3.  	A	->	B	:  	{Kab,A, T}Kbs
+''',
+
+'kerboros': '''
+1.   C -> A  :   U, G, L1, N1
+2.   A -> C  :   U, {U, C, G, Kcg, T1start, T1expire}Kag, {G, Kcg, T1start, T1expire}Ku
+3.   C -> G  :   S, L2, N2, {U, C, G, Kcg, T1start, T1expire}Kag, {C, T1}Kcg
+4.   G -> C  :   U, {U, C, S, Kcs, T2start, T2expire}Kgs, {S, Kcs, T2start, T2expire, N2}Kcg
+5.   C -> S  :   {U, C, S, Kcs, T2start, T2expire}Kgs, {C, T2}Kcs
+6.   S -> C  :   {T2}Kcs
+''',
+
+        }
+
+        for name, text in texts.items():
+            print('=' * 20)
+            print(name)
+            print('=' * 20)
+            if name != 'kerboros':
+                draw_stages(process(text), x, y, w, h)
+
+            filename = name.replace(' ', '_')
+            ps_filepath = FOLDERPATH + filename + ".ps"
+            t.screen.save(ps_filepath, overwrite=True)
+            
+            # convert .ps to .png
+            png_filename = f"{filename}.png"
+            image = Image.open(ps_filepath)
+            # image.save(PNG_FILENAME)
+
+            # screenshot - this works but ugly resolution
+            x0, y0 = -300, -300
+            x1, y1 = 300, 300
+            ImageGrab.grab().crop((x0, y0, x1, y1)).save(f"{filename}.png")
+
     else:
         lines = []
         done = False
